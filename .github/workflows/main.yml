@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: NPM
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4.1.6
 
     - name: Use Node.js 21.1.0
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4.0.2
       with:
         node-version: '21.1.0'
         registry-url: 'https://registry.npmjs.org'
