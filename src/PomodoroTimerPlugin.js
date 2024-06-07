@@ -1,6 +1,11 @@
 const PomodoroTimerPlugin = {
     privateVariables: new WeakMap(),
 
+    getTime: function() {
+        const { time } = this.privateVariables.get(this);
+        return time;
+    },
+
     getTextPosition: function(chartHeight, textHeight, position, offset = 0) {
         // Added an offset parameter to customize positioning further
         switch (position) {

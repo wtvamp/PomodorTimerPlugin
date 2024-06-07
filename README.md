@@ -132,7 +132,11 @@ const pomodoroChart = new Chart(el, {
     }
 });
 ```
-# Version 0.4.0-beta
+# Version 0.4.1-beta
+
+## Accessing The Time
+
+`getTime()` - Allows the user to get the remaining time of the current iteration
 
 ## Customize Text Location:
 
