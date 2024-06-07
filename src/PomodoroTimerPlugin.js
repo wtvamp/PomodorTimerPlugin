@@ -1,5 +1,7 @@
 const PomodoroTimerPlugin = {
     privateVariables: new WeakMap(),
+    time: 0,
+    timeLeft: 0,
 
     getTextPosition: function(chartHeight, textHeight, position, offset = 0) {
         // Added an offset parameter to customize positioning further
@@ -36,7 +38,7 @@ const PomodoroTimerPlugin = {
 
     beforeDraw: function (chart, args) {
         const { ctx, chartArea: { top, bottom }, width, options } = chart;
-        let { time, minutes, seconds, textColor, largeTextLocation, smallTextLocation, startPrompt, secondaryPrompt, timePassingMessage, timeCompleteMessage } = this.privateVariables.get(this);
+        let { minutes, seconds, textColor, largeTextLocation, smallTextLocation, startPrompt, secondaryPrompt, timePassingMessage, timeCompleteMessage } = this.privateVariables.get(this);
       
         const padding = options.layout.padding || { top: 0, bottom: 0, left: 0, right: 0 };
         const textPadding = 10; // Additional padding for text from edges or chart
@@ -86,8 +88,8 @@ const PomodoroTimerPlugin = {
     
         // Drawing small text
         ctx.font = `bolder ${smallTextSize}px Arial`;
-        let smallText = minutes === undefined ? secondaryPrompt : (time > 0 ? timePassingMessage : timeCompleteMessage);
-        ctx.fillStyle = time <= 0 ? 'red' : textColor;
+        let smallText = minutes === undefined ? secondaryPrompt : (this.time > 0 ? timePassingMessage : timeCompleteMessage);
+        ctx.fillStyle = this.time <= 0 ? 'red' : textColor;
         ctx.fillText(smallText, width / 2, smallTextY);
     
         ctx.restore();
@@ -116,9 +118,11 @@ const PomodoroTimerPlugin = {
             throw new Error(`Reset button element with ID '${stopButtonId}' not found.`);
         }
         console.log(textColor);
+        this.time = timeElement.value * 60;
+        this.timeLeft = 0;
         this.privateVariables.set(this, {
-            time: timeElement.value * 60,
-            timeLeft: 0,
+            // time: timeElement.value * 60,
+            // timeLeft: 0,
             startingMinutes: timeElement.value,
             clear: null,
             largeTextLocation: largeTextLocation || 'center', // Default to center if not specified
@@ -134,9 +138,9 @@ const PomodoroTimerPlugin = {
         resetButtonElement.disabled = true;
 
         startButtonElement.addEventListener('click', () => {
-            let { clear, time } = this.privateVariables.get(this);
+            let { clear } = this.privateVariables.get(this);
             if (timeElement.disabled === false) {
-                time = timeElement.value * 60;
+                this.time = timeElement.value * 60;
             }
             if (clear) {
                 clearInterval(clear); // Clear existing interval if any
@@ -148,8 +152,8 @@ const PomodoroTimerPlugin = {
             this.privateVariables.set(this, {
                 ...this.privateVariables.get(this), // Preserve other properties
                 clear: newClear,
-                time: time
             });
+            // this.time = time;
             timeElement.disabled = true;
             startButtonElement.disabled = true;
             stopButtonElement.disabled = false;
@@ -173,10 +177,14 @@ const PomodoroTimerPlugin = {
             const minutes = Math.floor(time / 60);
             // Retrieve the current settings for text location and color
             let pluginSettings = this.privateVariables.get(this);
+            this.time = time;
+            // this.minutes = minutes < 10 ? '0' + minutes : minutes,
+            // this.seconds = (time % 60) < 10 ? '0' + time % 60 : time % 60
+            this.timeLeft = 0;
             this.privateVariables.set(this, {
                 ...pluginSettings, // Preserve existing settings
-                time: time,
-                timeLeft: 0,
+                // time: time,
+                // timeLeft: 0,
                 minutes: minutes < 10 ? '0' + minutes : minutes,
                 seconds: (time % 60) < 10 ? '0' + time % 60 : time % 60
             });
@@ -187,28 +195,30 @@ const PomodoroTimerPlugin = {
     },
 
     updateCountdown: function (chart) {
-        let { time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
-        if (time <= 0) {
+        // let { time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
+        // let { timeLeft } = this.privateVariables.get(this);
+        let { minutes, seconds } = this.privateVariables.get(this);
+        if (this.time <= 0) {
             this.stopTimer();
             return;
         }
 
-        time--; // Decrease time by 1 second
-        timeLeft++; // Increment timeLeft
-        minutes = Math.floor(time / 60) < 10 ? '0' + Math.floor(time / 60) : Math.floor(time / 60);
-        seconds = (time % 60) < 10 ? '0' + time % 60 : time % 60;
+        this.time--; // Decrease time by 1 second
+        this.timeLeft++; // Increment timeLeft
+        minutes = Math.floor(this.time / 60) < 10 ? '0' + Math.floor(this.time / 60) : Math.floor(this.time / 60);
+        seconds = (this.time % 60) < 10 ? '0' + this.time % 60 : this.time % 60;
 
         this.privateVariables.set(this, {
             ...this.privateVariables.get(this), // Preserve other properties
-            time: time,
-            timeLeft: timeLeft,
+            // time: time,
+            // timeLeft: timeLeft,
             minutes: minutes,
             seconds: seconds
         });
 
         // Update chart data
-        chart.data.datasets[0].data[0] = timeLeft;
-        chart.data.datasets[0].data[1] = time;
+        chart.data.datasets[0].data[0] = this.timeLeft;
+        chart.data.datasets[0].data[1] = this.time;
         chart.update();
     },
 
