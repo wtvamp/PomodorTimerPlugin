@@ -6,11 +6,14 @@ const PomodoroTimerPlugin = {
         return time;
     },
 
-    updateTaskCycle: function(taskCycle) {
+    updateTaskCycle: function(taskCycleForm) {
         let currentVariables = this.privateVariables.get(this);
-        this.privateVariables.set(this,{
+        const taskTime = taskCycleForm.timerInput.value * 60;
+        const shortBreakTime = taskCycleForm.shortBreakInput.value * 60;
+        const longBreakTime = taskCycleForm.longBreakInput.value * 60;
+        this.privateVariables.set(this, {
             ...currentVariables,
-            taskCycle
+            taskCycle: [taskTime, shortBreakTime, taskTime, shortBreakTime, taskTime, longBreakTime]
         })
     },
 
@@ -112,10 +115,10 @@ const PomodoroTimerPlugin = {
         const { taskCycleFormId, startButtonId, stopButtonId, resetButtonId, textColor, largeTextLocation, smallTextLocation, startPrompt = "Enter Time", secondaryPrompt = "Then Press Start", timePassingMessage = "Work", timeCompleteMessage = "Time's Up" } = options;
  
         
-        const taskCycle = document.getElementById(taskCycleFormId);
-        const timeElement = taskCycle.timerInput;
-        const shortBreakElement = taskCycle.shortBreakInput;
-        const longBreakElement = taskCycle.longBreakInput
+        const taskCycleForm = document.getElementById(taskCycleFormId);
+        const timeElement = taskCycleForm.timerInput;
+        const shortBreakElement = taskCycleForm.shortBreakInput;
+        const longBreakElement = taskCycleForm.longBreakInput
 
         const startButtonElement = document.getElementById(startButtonId);
         const stopButtonElement = document.getElementById(stopButtonId);
@@ -123,7 +126,7 @@ const PomodoroTimerPlugin = {
 
 
         if (!timeElement) {
-            throw new Error(`Timer element with ID '${taskCycle.timerInput}' not found.`);
+            throw new Error(`Timer element with ID '${taskCycleForm.timerInput}' not found.`);
         }
         if (!startButtonElement) {
             throw new Error(`Start button element with ID '${startButtonId}' not found.`);
@@ -145,9 +148,9 @@ const PomodoroTimerPlugin = {
                 longBreakElement.value * 60,
             ],
             taskCycleIndex: 0,
-            time: taskCycle[0],
+            time: taskCycleForm[0],
             timeLeft: 0,
-            startingMinutes: taskCycle[0] / 60,
+            startingMinutes: taskCycleForm[0] / 60,
             clear: null,
             largeTextLocation: largeTextLocation || 'center', // Default to center if not specified
             smallTextLocation: smallTextLocation || 'center', // Default to center if not specified
@@ -162,9 +165,11 @@ const PomodoroTimerPlugin = {
         resetButtonElement.disabled = true;
 
         startButtonElement.addEventListener('click', () => {
-            let { clear, time } = this.privateVariables.get(this);
+            this.updateTaskCycle(taskCycleForm);
+            let { clear, time, taskCycle } = this.privateVariables.get(this);
+
             if (timeElement.disabled === false) {
-                time = timeElement.value * 60;
+                time = taskCycle[0];
             }
             if (clear) {
                 clearInterval(clear); // Clear existing interval if any
@@ -178,6 +183,7 @@ const PomodoroTimerPlugin = {
                 clear: newClear,
                 time: time
             });
+            
             timeElement.disabled = true;
             shortBreakElement.disabled = true;
             longBreakElement.disabled = true;
@@ -189,6 +195,8 @@ const PomodoroTimerPlugin = {
         stopButtonElement.addEventListener('click', () => {
             this.stopTimer();
             timeElement.disabled = true;
+            shortBreakElement.disabled = true;
+            longBreakElement.disabled = true;
             startButtonElement.disabled = false;
             stopButtonElement.disabled = true;
             resetButtonElement.disabled = false;
@@ -196,6 +204,8 @@ const PomodoroTimerPlugin = {
 
         resetButtonElement.addEventListener('click', () => {
             timeElement.disabled = false;
+            shortBreakElement.disabled = false;
+            longBreakElement.disabled = false;
             startButtonElement.disabled = false;
             stopButtonElement.disabled = true;
             resetButtonElement.disabled = true;
@@ -221,11 +231,13 @@ const PomodoroTimerPlugin = {
         console.log('TIME LEFT OUTSIDE: ', timeLeft)
         if (time <= 0) {
             if(taskCycleIndex < taskCycle.length - 1){
+                timeLeft = -1;
+                console.log('TIME LEFT: ', timeLeft)
                 taskCycleIndex++;
                 time = taskCycle[taskCycleIndex];
                 this.privateVariables.set(this, {
                     ...this.privateVariables.get(this),
-                    timeLeft: 0,
+                    timeLeft: timeLeft,
                     taskCycleIndex: taskCycleIndex,
                     timePassingMessage: taskCycleIndex === taskCycle.length - 1 ? "Long Rest" : taskCycleIndex % 2 === 0 ? "Work" : "Short Rest"
                 })
