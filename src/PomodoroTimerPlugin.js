@@ -153,7 +153,7 @@ const PomodoroTimerPlugin = {
             ],
             taskCycleIndex: 0,
             time: timeElement.value * 60,
-            timeLeft: 0,
+            timeLeft: -1, // setting this to 0 causes a 60s timer to start at 59s because of the 1s delay within `.newClear()` on line 181
             startingMinutes: timeElement.value,
             clear: null,
             largeTextLocation: largeTextLocation || 'center', // Default to center if not specified
@@ -236,7 +236,7 @@ const PomodoroTimerPlugin = {
             if(taskCycleIndex < taskCycle.length - 1){
                 timeLeft = -1; //setting this to 0 causes chart to re-render on new cycle with 1s already filled in
                 taskCycleIndex++;
-                time = taskCycle[taskCycleIndex];
+                time = taskCycle[taskCycleIndex] + 1; // add 1 to offset the time it takes to render, otherwise subsequent timers will be off by 1 (e.g. 60s timers will only be for 59s)
                 this.privateVariables.set(this, {
                     ...this.privateVariables.get(this),
                     timeLeft: timeLeft,
