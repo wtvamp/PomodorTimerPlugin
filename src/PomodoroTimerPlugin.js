@@ -6,6 +6,14 @@ const PomodoroTimerPlugin = {
         return time;
     },
 
+    updateTaskCycle: function(taskCycle) {
+        let currentVariables = this.privateVariables.get(this);
+        this.privateVariables.set(this,{
+            ...currentVariables,
+            taskCycle
+        })
+    },
+
     getTextPosition: function(chartHeight, textHeight, position, offset = 0) {
         // Added an offset parameter to customize positioning further
         switch (position) {
@@ -101,15 +109,21 @@ const PomodoroTimerPlugin = {
     install: function (chart, args, options) {
         console.log("Installing Pomodoro Timer Plugin");
         // Extract new configurable messages from options
-        const { timerInputId, startButtonId, stopButtonId, resetButtonId, textColor, largeTextLocation, smallTextLocation, startPrompt = "Enter Time", secondaryPrompt = "Then Press Start", timePassingMessage = "Work", timeCompleteMessage = "Time's Up" } = options;
+        const { taskCycleFormId, startButtonId, stopButtonId, resetButtonId, textColor, largeTextLocation, smallTextLocation, startPrompt = "Enter Time", secondaryPrompt = "Then Press Start", timePassingMessage = "Work", timeCompleteMessage = "Time's Up" } = options;
  
-        const timeElement = document.getElementById(timerInputId);
+        
+        const taskCycle = document.getElementById(taskCycleFormId);
+        const timeElement = taskCycle.timerInput;
+        const shortBreakElement = taskCycle.shortBreakInput;
+        const longBreakElement = taskCycle.longBreakInput
+
         const startButtonElement = document.getElementById(startButtonId);
         const stopButtonElement = document.getElementById(stopButtonId);
         const resetButtonElement = document.getElementById(resetButtonId);
 
+
         if (!timeElement) {
-            throw new Error(`Timer element with ID '${timerInputId}' not found.`);
+            throw new Error(`Timer element with ID '${taskCycle.timerInput}' not found.`);
         }
         if (!startButtonElement) {
             throw new Error(`Start button element with ID '${startButtonId}' not found.`);
@@ -120,11 +134,20 @@ const PomodoroTimerPlugin = {
         if (!resetButtonElement) {
             throw new Error(`Reset button element with ID '${stopButtonId}' not found.`);
         }
-        console.log(textColor);
+        console.log(textColor); // do we still neeed this here?
         this.privateVariables.set(this, {
-            time: timeElement.value * 60,
+            taskCycle: [
+                timeElement.value * 60,
+                shortBreakElement.value * 60,
+                timeElement.value * 60,
+                shortBreakElement.value * 60,
+                timeElement.value * 60,
+                longBreakElement.value * 60,
+            ],
+            taskCycleIndex: 0,
+            time: taskCycle[0],
             timeLeft: 0,
-            startingMinutes: timeElement.value,
+            startingMinutes: taskCycle[0] / 60,
             clear: null,
             largeTextLocation: largeTextLocation || 'center', // Default to center if not specified
             smallTextLocation: smallTextLocation || 'center', // Default to center if not specified
@@ -156,6 +179,8 @@ const PomodoroTimerPlugin = {
                 time: time
             });
             timeElement.disabled = true;
+            shortBreakElement.disabled = true;
+            longBreakElement.disabled = true;
             startButtonElement.disabled = true;
             stopButtonElement.disabled = false;
             resetButtonElement.disabled = false;
@@ -192,10 +217,22 @@ const PomodoroTimerPlugin = {
     },
 
     updateCountdown: function (chart) {
-        let { time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
+        let { taskCycle, taskCycleIndex, time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
+        console.log('TIME LEFT OUTSIDE: ', timeLeft)
         if (time <= 0) {
-            this.stopTimer();
-            return;
+            if(taskCycleIndex < taskCycle.length - 1){
+                taskCycleIndex++;
+                time = taskCycle[taskCycleIndex];
+                this.privateVariables.set(this, {
+                    ...this.privateVariables.get(this),
+                    timeLeft: 0,
+                    taskCycleIndex: taskCycleIndex,
+                    timePassingMessage: taskCycleIndex === taskCycle.length - 1 ? "Long Rest" : taskCycleIndex % 2 === 0 ? "Work" : "Short Rest"
+                })
+            } else if(taskCycleIndex == taskCycle.length - 1){
+                this.stopTimer();
+                return;
+            }
         }
 
         time--; // Decrease time by 1 second
