@@ -173,7 +173,7 @@ const PomodoroTimerPlugin = {
             let { clear, time, taskCycle } = this.privateVariables.get(this);
 
             if (timeElement.disabled === false) {
-                time = taskCycle[0];
+                time = taskCycle[0] + 1; // allows the timer to actually start with the full amount instead of being 1s off (e.g. when I ran a 6s timer, the timer only ticked 5 times )
             }
             if (clear) {
                 clearInterval(clear); // Clear existing interval if any
