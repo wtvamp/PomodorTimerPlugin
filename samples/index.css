@@ -21,3 +21,12 @@ div#chartBox {
 div#buttonsBox {
     margin-top: 2vh;
 }
+
+#taskCycleTimes{
+    display: flex;
+}
+
+.inputContainer {
+    display: flex; 
+    flex-direction: column;
+}

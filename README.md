@@ -78,7 +78,20 @@ import PomodoroTimerPlugin from './PomodoroTimerPlugin';
 2)  Create the following html - along with 4 buttons:
 ```html
 <canvas id="pomodoroChart"></canvas>
-<input type="text" id="timerInput" placeholder="Enter time in minutes" value="2" min="1" max="60" />
+<div id="taskCycleTimes">
+    <div class="inputContainer">
+        <label>Task Time</label>
+        <input type="text" id="timerInput" placeholder="Enter time in minutes" value="0.1" min="1" max="60" />
+    </div>
+    <div class="inputContainer">
+        <label>Short Break</label>
+        <input type="text" id="shortBreakInput" placeholder="Short Break in Mins" value="0.05" min="1" max="60" />
+    </div>
+    <div class="inputContainer">
+        <label>Long Break</label>
+        <input type="text" id="longBreakInput" placeholder="Long Break in Mins" value="0.1" min="1" max="60" />
+    </div>
+</div>
 <button id="timerStart" class="pomodoroButton">Start</button>
 <button id="timerStop" class="pomodoroButton">Stop</button>
 <button id="timerReset" class="pomodoroButton">Reset</button>
@@ -115,6 +128,8 @@ const pomodoroChart = new Chart(el, {
         plugins: {
             PomodoroTimerPlugin: {
                 timerInputId: "timerInput",
+                shortBreakInputId: "shortBreakInput",
+                longBreakInputId: "longBreakInput",
                 startButtonId: "timerStart",
                 stopButtonId: "timerStop",
                 resetButtonId: "timerReset",
@@ -132,11 +147,17 @@ const pomodoroChart = new Chart(el, {
     }
 });
 ```
-# Version 0.4.1-beta
+# Version 0.4.2-beta
 
 ## Accessing The Time
 
 `getTime()` - Allows the user to get the remaining time of the current iteration
+
+## Updating The Pomodoro Cycle
+
+The Pomodoro Timer Plugin now supports short breaks and long breaks that occur between work iterations. The cycle occurs as follows:
+
+Work → Short Break → Work → Short Break → Work → Long Break
 
 ## Customize Text Location:
 
