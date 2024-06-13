@@ -228,11 +228,9 @@ const PomodoroTimerPlugin = {
 
     updateCountdown: function (chart) {
         let { taskCycle, taskCycleIndex, time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
-        console.log('TIME LEFT OUTSIDE: ', timeLeft)
         if (time <= 0) {
             if(taskCycleIndex < taskCycle.length - 1){
-                timeLeft = -1;
-                console.log('TIME LEFT: ', timeLeft)
+                timeLeft = -1; //setting this to 0 causes chart to re-render on new cycle with 1s already filled in
                 taskCycleIndex++;
                 time = taskCycle[taskCycleIndex];
                 this.privateVariables.set(this, {
