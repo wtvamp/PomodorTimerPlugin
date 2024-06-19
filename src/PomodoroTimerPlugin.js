@@ -6,6 +6,17 @@ const PomodoroTimerPlugin = {
         return time;
     },
 
+    updateTaskCycle: function(timeElement, shortBreakElement, longBreakElement) {
+        let currentVariables = this.privateVariables.get(this);
+        const taskTime = timeElement.value * 60;
+        const shortBreakTime = shortBreakElement.value * 60;
+        const longBreakTime = longBreakElement.value * 60;
+        this.privateVariables.set(this, {
+            ...currentVariables,
+            taskCycle: [taskTime, shortBreakTime, taskTime, shortBreakTime, taskTime, longBreakTime]
+        })
+    },
+
     getTextPosition: function(chartHeight, textHeight, position, offset = 0) {
         // Added an offset parameter to customize positioning further
         switch (position) {
@@ -101,15 +112,25 @@ const PomodoroTimerPlugin = {
     install: function (chart, args, options) {
         console.log("Installing Pomodoro Timer Plugin");
         // Extract new configurable messages from options
-        const { timerInputId, startButtonId, stopButtonId, resetButtonId, textColor, largeTextLocation, smallTextLocation, startPrompt = "Enter Time", secondaryPrompt = "Then Press Start", timePassingMessage = "Work", timeCompleteMessage = "Time's Up" } = options;
+        const { timerInputId, shortBreakInputId, longBreakInputId, startButtonId, stopButtonId, resetButtonId, textColor, largeTextLocation, smallTextLocation, startPrompt = "Enter Time", secondaryPrompt = "Then Press Start", timePassingMessage = "Work", timeCompleteMessage = "Time's Up" } = options;
  
+        
         const timeElement = document.getElementById(timerInputId);
+        const shortBreakElement = document.getElementById(shortBreakInputId);
+        const longBreakElement = document.getElementById(longBreakInputId);
+
         const startButtonElement = document.getElementById(startButtonId);
         const stopButtonElement = document.getElementById(stopButtonId);
         const resetButtonElement = document.getElementById(resetButtonId);
 
         if (!timeElement) {
-            throw new Error(`Timer element with ID '${timerInputId}' not found.`);
+            throw new Error(`Timer element with the ID '${timerInputId}' not found.`);
+        }
+        if (!shortBreakElement) {
+            throw new Error(`Short break element with the ID '${shortBreakInputId} not found.`);
+        }
+        if (!longBreakElement) {
+            throw new Error(`Long break element with the ID '${longBreakInputId} not found.`);
         }
         if (!startButtonElement) {
             throw new Error(`Start button element with ID '${startButtonId}' not found.`);
@@ -120,10 +141,19 @@ const PomodoroTimerPlugin = {
         if (!resetButtonElement) {
             throw new Error(`Reset button element with ID '${stopButtonId}' not found.`);
         }
-        console.log(textColor);
+        console.log(textColor); // do we still neeed this here?
         this.privateVariables.set(this, {
+            taskCycle: [
+                timeElement.value * 60,
+                shortBreakElement.value * 60,
+                timeElement.value * 60,
+                shortBreakElement.value * 60,
+                timeElement.value * 60,
+                longBreakElement.value * 60,
+            ],
+            taskCycleIndex: 0,
             time: timeElement.value * 60,
-            timeLeft: 0,
+            timeLeft: -1, // setting this to 0 causes a 60s timer to start at 59s because of the 1s delay within `.newClear()` on line 181
             startingMinutes: timeElement.value,
             clear: null,
             largeTextLocation: largeTextLocation || 'center', // Default to center if not specified
@@ -139,9 +169,11 @@ const PomodoroTimerPlugin = {
         resetButtonElement.disabled = true;
 
         startButtonElement.addEventListener('click', () => {
-            let { clear, time } = this.privateVariables.get(this);
+            this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
+            let { clear, time, taskCycle } = this.privateVariables.get(this);
+
             if (timeElement.disabled === false) {
-                time = timeElement.value * 60;
+                time = taskCycle[0] + 1; // allows the timer to actually start with the full amount instead of being 1s off (e.g. when I ran a 6s timer, the timer only ticked 5 times )
             }
             if (clear) {
                 clearInterval(clear); // Clear existing interval if any
@@ -155,7 +187,10 @@ const PomodoroTimerPlugin = {
                 clear: newClear,
                 time: time
             });
+            
             timeElement.disabled = true;
+            shortBreakElement.disabled = true;
+            longBreakElement.disabled = true;
             startButtonElement.disabled = true;
             stopButtonElement.disabled = false;
             resetButtonElement.disabled = false;
@@ -164,6 +199,8 @@ const PomodoroTimerPlugin = {
         stopButtonElement.addEventListener('click', () => {
             this.stopTimer();
             timeElement.disabled = true;
+            shortBreakElement.disabled = true;
+            longBreakElement.disabled = true;
             startButtonElement.disabled = false;
             stopButtonElement.disabled = true;
             resetButtonElement.disabled = false;
@@ -171,6 +208,8 @@ const PomodoroTimerPlugin = {
 
         resetButtonElement.addEventListener('click', () => {
             timeElement.disabled = false;
+            shortBreakElement.disabled = false;
+            longBreakElement.disabled = false;
             startButtonElement.disabled = false;
             stopButtonElement.disabled = true;
             resetButtonElement.disabled = true;
@@ -192,10 +231,22 @@ const PomodoroTimerPlugin = {
     },
 
     updateCountdown: function (chart) {
-        let { time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
+        let { taskCycle, taskCycleIndex, time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
         if (time <= 0) {
-            this.stopTimer();
-            return;
+            if(taskCycleIndex < taskCycle.length - 1){
+                timeLeft = -1; //setting this to 0 causes chart to re-render on new cycle with 1s already filled in
+                taskCycleIndex++;
+                time = taskCycle[taskCycleIndex] + 1; // add 1 to offset the time it takes to render, otherwise subsequent timers will be off by 1 (e.g. 60s timers will only be for 59s)
+                this.privateVariables.set(this, {
+                    ...this.privateVariables.get(this),
+                    timeLeft: timeLeft,
+                    taskCycleIndex: taskCycleIndex,
+                    timePassingMessage: taskCycleIndex === taskCycle.length - 1 ? "Long Rest" : taskCycleIndex % 2 === 0 ? "Work" : "Short Rest"
+                })
+            } else if(taskCycleIndex == taskCycle.length - 1){
+                this.stopTimer();
+                return;
+            }
         }
 
         time--; // Decrease time by 1 second
