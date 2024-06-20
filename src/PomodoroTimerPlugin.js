@@ -1,9 +1,16 @@
+const fmnNotify = new Event("FMN_Notify")
+
 const PomodoroTimerPlugin = {
     privateVariables: new WeakMap(),
 
     getTime: function() {
         const { time } = this.privateVariables.get(this);
         return time;
+    },
+
+    getCurrentTask: function(){
+        const { timePassingMessage } = this.privateVariables.get(this);
+        return timePassingMessage;
     },
 
     updateTaskCycle: function(timeElement, shortBreakElement, longBreakElement) {
@@ -15,6 +22,11 @@ const PomodoroTimerPlugin = {
             ...currentVariables,
             taskCycle: [taskTime, shortBreakTime, taskTime, shortBreakTime, taskTime, longBreakTime]
         })
+    },
+
+    triggerNotification: function(){
+        // logic go here
+        window.dispatchEvent(fmnNotify);
     },
 
     getTextPosition: function(chartHeight, textHeight, position, offset = 0) {
@@ -168,6 +180,9 @@ const PomodoroTimerPlugin = {
         stopButtonElement.disabled = true;
         resetButtonElement.disabled = true;
 
+        
+        window.addEventListener("FMN_Notify", () => console.log(this.getCurrentTask()))
+
         startButtonElement.addEventListener('click', () => {
             this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
             let { clear, time, taskCycle } = this.privateVariables.get(this);
@@ -242,7 +257,8 @@ const PomodoroTimerPlugin = {
                     timeLeft: timeLeft,
                     taskCycleIndex: taskCycleIndex,
                     timePassingMessage: taskCycleIndex === taskCycle.length - 1 ? "Long Rest" : taskCycleIndex % 2 === 0 ? "Work" : "Short Rest"
-                })
+                });
+                this.triggerNotification();
             } else if(taskCycleIndex == taskCycle.length - 1){
                 this.stopTimer();
                 return;
