@@ -147,17 +147,22 @@ const pomodoroChart = new Chart(el, {
     }
 });
 ```
+
 # Version 0.4.2-beta
-
-## Accessing The Time
-
-`getTime()` - Allows the user to get the remaining time of the current iteration
 
 ## Updating The Pomodoro Cycle
 
 The Pomodoro Timer Plugin now supports short breaks and long breaks that occur between work iterations. The cycle occurs as follows:
 
 Work → Short Break → Work → Short Break → Work → Long Break
+
+# Version 0.4.1-beta
+
+## Accessing The Time
+
+`getTime()` - Allows the user to get the remaining time of the current iteration
+
+# Version 0.4.0-beta
 
 ## Customize Text Location:
 
