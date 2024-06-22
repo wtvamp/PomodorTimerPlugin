@@ -23,7 +23,7 @@ const PomodoroTimerPlugin = {
     },
 
     triggerNotification: function(){
-        const notify = new CustomEvent("notification", {
+        const notify = new CustomEvent("pomodoroTimerNotification", {
             detail: {
                 currentTask: this.getCurrentTask()
             }
