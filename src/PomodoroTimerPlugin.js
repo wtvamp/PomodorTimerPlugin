@@ -1,5 +1,3 @@
-const fmnNotify = new Event("FMN_Notify")
-
 const PomodoroTimerPlugin = {
     privateVariables: new WeakMap(),
 
@@ -25,8 +23,12 @@ const PomodoroTimerPlugin = {
     },
 
     triggerNotification: function(){
-        // logic go here
-        window.dispatchEvent(fmnNotify);
+        const notify = new CustomEvent("notification", {
+            detail: {
+                currentTask: this.getCurrentTask()
+            }
+        })
+        window.dispatchEvent(notify);
     },
 
     getTextPosition: function(chartHeight, textHeight, position, offset = 0) {
@@ -180,9 +182,6 @@ const PomodoroTimerPlugin = {
         stopButtonElement.disabled = true;
         resetButtonElement.disabled = true;
 
-        
-        window.addEventListener("FMN_Notify", () => console.log(this.getCurrentTask()))
-
         startButtonElement.addEventListener('click', () => {
             this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
             let { clear, time, taskCycle } = this.privateVariables.get(this);
@@ -260,6 +259,7 @@ const PomodoroTimerPlugin = {
                 });
                 this.triggerNotification();
             } else if(taskCycleIndex == taskCycle.length - 1){
+                this.triggerNotification();
                 this.stopTimer();
                 return;
             }
