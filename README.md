@@ -148,6 +148,14 @@ const pomodoroChart = new Chart(el, {
 });
 ```
 
+# Version 0.4.3-beta
+
+## Dispatching Events
+
+The Pomodoro Timer Plugin will now dispatch a custom event, `pomodoroTimerNotification`, when any cycle iteration comes to an end. (E.g. When the timer hits 0, the custom event will be dispatched)
+
+All you need to do is add your own event listeners!
+
 # Version 0.4.2-beta
 
 ## Updating The Pomodoro Cycle

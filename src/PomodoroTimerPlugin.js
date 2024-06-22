@@ -6,6 +6,11 @@ const PomodoroTimerPlugin = {
         return time;
     },
 
+    getCurrentTask: function(){
+        const { timePassingMessage } = this.privateVariables.get(this);
+        return timePassingMessage;
+    },
+
     updateTaskCycle: function(timeElement, shortBreakElement, longBreakElement) {
         let currentVariables = this.privateVariables.get(this);
         const taskTime = timeElement.value * 60;
@@ -15,6 +20,15 @@ const PomodoroTimerPlugin = {
             ...currentVariables,
             taskCycle: [taskTime, shortBreakTime, taskTime, shortBreakTime, taskTime, longBreakTime]
         })
+    },
+
+    triggerNotification: function(){
+        const notify = new CustomEvent("pomodoroTimerNotification", {
+            detail: {
+                currentTask: this.getCurrentTask()
+            }
+        })
+        window.dispatchEvent(notify);
     },
 
     getTextPosition: function(chartHeight, textHeight, position, offset = 0) {
@@ -242,8 +256,10 @@ const PomodoroTimerPlugin = {
                     timeLeft: timeLeft,
                     taskCycleIndex: taskCycleIndex,
                     timePassingMessage: taskCycleIndex === taskCycle.length - 1 ? "Long Rest" : taskCycleIndex % 2 === 0 ? "Work" : "Short Rest"
-                })
+                });
+                this.triggerNotification();
             } else if(taskCycleIndex == taskCycle.length - 1){
+                this.triggerNotification();
                 this.stopTimer();
                 return;
             }
