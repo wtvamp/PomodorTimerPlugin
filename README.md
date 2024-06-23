@@ -148,6 +148,19 @@ const pomodoroChart = new Chart(el, {
 });
 ```
 
+# Version 0.4.4-beta
+
+## Time Handler Methods
+
+The Pomodoro Timer Plugin now has the ability to invoke four different methods to handle the timer:
+
+- `handleStartTimer()`
+- `handleStopTimer()`
+- `handleResetTimer()`
+- `handleSkipTimer()`
+
+By default, `handleStartTimer()`, `handleStopTimer()`, and `handleResetTimer()` are used as the `onClick` event handlers for their respective buttons. Now, you have the option to call any of these four handlers anywhere else in your project which allows you to have more flexibility and control over the plugin!
+
 # Version 0.4.3-beta
 
 ## Dispatching Events
