@@ -133,6 +133,35 @@ const PomodoroTimerPlugin = {
         stopButtonElement.disabled = true;
         resetButtonElement.disabled = false;
     },
+
+    handleStartTimer: function() {
+        const {timeElement, shortBreakElement, longBreakElement, startButtonElement, stopButtonElement, resetButtonElement, chart} = this.privateVariables.get(this);
+        this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
+        let { clear, time, taskCycle } = this.privateVariables.get(this);
+
+        if (timeElement.disabled === false) {
+            time = taskCycle[0] + 1; // allows the timer to actually start with the full amount instead of being 1s off (e.g. when I ran a 6s timer, the timer only ticked 5 times )
+        }
+        if (clear) {
+            clearInterval(clear); // Clear existing interval if any
+        }
+        const newClear = setInterval(() => {
+            this.updateCountdown(chart); 
+        }, 1000);
+
+        this.privateVariables.set(this, {
+            ...this.privateVariables.get(this), // Preserve other properties
+            clear: newClear,
+            time: time
+        });
+        
+        timeElement.disabled = true;
+        shortBreakElement.disabled = true;
+        longBreakElement.disabled = true;
+        startButtonElement.disabled = true;
+        stopButtonElement.disabled = false;
+        resetButtonElement.disabled = false;
+    },
     
     handleResetTimer: function() {
         const {timeElement, shortBreakElement, longBreakElement, startButtonElement, stopButtonElement, resetButtonElement, chart} = this.privateVariables.get(this);
@@ -248,33 +277,7 @@ const PomodoroTimerPlugin = {
         stopButtonElement.disabled = true;
         resetButtonElement.disabled = true;
 
-        startButtonElement.addEventListener('click', () => {
-            this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
-            let { clear, time, taskCycle } = this.privateVariables.get(this);
-
-            if (timeElement.disabled === false) {
-                time = taskCycle[0] + 1; // allows the timer to actually start with the full amount instead of being 1s off (e.g. when I ran a 6s timer, the timer only ticked 5 times )
-            }
-            if (clear) {
-                clearInterval(clear); // Clear existing interval if any
-            }
-            const newClear = setInterval(() => {
-                this.updateCountdown(chart); 
-            }, 1000);
-
-            this.privateVariables.set(this, {
-                ...this.privateVariables.get(this), // Preserve other properties
-                clear: newClear,
-                time: time
-            });
-            
-            timeElement.disabled = true;
-            shortBreakElement.disabled = true;
-            longBreakElement.disabled = true;
-            startButtonElement.disabled = true;
-            stopButtonElement.disabled = false;
-            resetButtonElement.disabled = false;
-        });
+        startButtonElement.addEventListener('click', () => this.handleStartTimer());
 
         stopButtonElement.addEventListener('click', () => this.handleStopTimer());
 
