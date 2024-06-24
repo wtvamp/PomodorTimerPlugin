@@ -148,6 +148,10 @@ const pomodoroChart = new Chart(el, {
 });
 ```
 
+# Version 0.4.5-beta
+
+All methods on the Pomodoro Timer Plugin are now immutable.
+
 # Version 0.4.4-beta
 
 ## Time Handler Methods
