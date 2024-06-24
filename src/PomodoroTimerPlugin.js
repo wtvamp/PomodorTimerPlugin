@@ -1,3 +1,5 @@
+"use strict";
+
 const PomodoroTimerPlugin = {
     privateVariables: new WeakMap(),
 
@@ -121,7 +123,95 @@ const PomodoroTimerPlugin = {
         ctx.fillText(smallText, width / 2, smallTextY);
     
         ctx.restore();
-    },    
+    },
+
+    handleStopTimer: function() {
+        const {timeElement, shortBreakElement, longBreakElement, startButtonElement, stopButtonElement, resetButtonElement} = this.privateVariables.get(this);
+        this.stopTimer();
+        timeElement.disabled = true;
+        shortBreakElement.disabled = true;
+        longBreakElement.disabled = true;
+        startButtonElement.disabled = false;
+        stopButtonElement.disabled = true;
+        resetButtonElement.disabled = false;
+    },
+
+    handleStartTimer: function() {
+        const {timeElement, shortBreakElement, longBreakElement, startButtonElement, stopButtonElement, resetButtonElement, chart} = this.privateVariables.get(this);
+        this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
+        let { clear, time, taskCycle } = this.privateVariables.get(this);
+
+        if (timeElement.disabled === false) {
+            time = taskCycle[0] + 1; // allows the timer to actually start with the full amount instead of being 1s off (e.g. when I ran a 6s timer, the timer only ticked 5 times )
+        }
+        if (clear) {
+            clearInterval(clear); // Clear existing interval if any
+        }
+        const newClear = setInterval(() => {
+            this.updateCountdown(chart); 
+        }, 1000);
+
+        this.privateVariables.set(this, {
+            ...this.privateVariables.get(this), // Preserve other properties
+            clear: newClear,
+            time: time
+        });
+        
+        timeElement.disabled = true;
+        shortBreakElement.disabled = true;
+        longBreakElement.disabled = true;
+        startButtonElement.disabled = true;
+        stopButtonElement.disabled = false;
+        resetButtonElement.disabled = false;
+    },
+    
+    handleResetTimer: function() {
+        const {timeElement, shortBreakElement, longBreakElement, startButtonElement, stopButtonElement, resetButtonElement, chart} = this.privateVariables.get(this);
+        timeElement.disabled = false;
+        shortBreakElement.disabled = false;
+        longBreakElement.disabled = false;
+        startButtonElement.disabled = false;
+        stopButtonElement.disabled = true;
+        resetButtonElement.disabled = true;
+        const time = timeElement.value * 60
+        const minutes = Math.floor(time / 60);
+        // Retrieve the current settings for text location and color
+        let pluginSettings = this.privateVariables.get(this);
+        this.privateVariables.set(this, {
+            ...pluginSettings, // Preserve existing settings
+            time: time,
+            timeLeft: 0,
+            minutes: minutes < 10 ? '0' + minutes : minutes,
+            seconds: (time % 60) < 10 ? '0' + time % 60 : time % 60
+        });
+        this.stopTimer();
+        chart.data.datasets[0].data = [0, time];
+        chart.update();
+    },
+
+    handleSkipTimer: function() {
+        let { taskCycle, taskCycleIndex, time, timeLeft } = this.privateVariables.get(this);
+        if(taskCycleIndex < taskCycle.length - 1){
+            timeLeft = -1; //setting this to 0 causes chart to re-render on new cycle with 1s already filled in
+            taskCycleIndex++;
+            time = taskCycle[taskCycleIndex] + 1; // add 1 to offset the time it takes to render, otherwise subsequent timers will be off by 1 (e.g. 60s timers will only be for 59s)
+            this.privateVariables.set(this, {
+                ...this.privateVariables.get(this),
+                time: time,
+                timeLeft: timeLeft,
+                taskCycleIndex: taskCycleIndex,
+                timePassingMessage: taskCycleIndex === taskCycle.length - 1 ? "Long Rest" : taskCycleIndex % 2 === 0 ? "Work" : "Short Rest"
+            });
+        } else if(taskCycleIndex == taskCycle.length - 1){
+            this.handleResetTimer();
+            this.privateVariables.set(this, {
+                ...this.privateVariables.get(this),
+                taskCycleIndex: 0,
+                timePassingMessage: "Ready to Start"
+            })
+            return;
+        }
+    },
 
     install: function (chart, args, options) {
         console.log("Installing Pomodoro Timer Plugin");
@@ -176,72 +266,24 @@ const PomodoroTimerPlugin = {
             startPrompt,
             secondaryPrompt,
             timePassingMessage,
-            timeCompleteMessage
+            timeCompleteMessage,
+            timeElement: timeElement,
+            shortBreakElement: shortBreakElement,
+            longBreakElement: longBreakElement,
+            startButtonElement: startButtonElement,
+            stopButtonElement: stopButtonElement,
+            resetButtonElement: resetButtonElement,
+            chart: chart
         });
 
         stopButtonElement.disabled = true;
         resetButtonElement.disabled = true;
 
-        startButtonElement.addEventListener('click', () => {
-            this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
-            let { clear, time, taskCycle } = this.privateVariables.get(this);
+        startButtonElement.addEventListener('click', () => this.handleStartTimer());
 
-            if (timeElement.disabled === false) {
-                time = taskCycle[0] + 1; // allows the timer to actually start with the full amount instead of being 1s off (e.g. when I ran a 6s timer, the timer only ticked 5 times )
-            }
-            if (clear) {
-                clearInterval(clear); // Clear existing interval if any
-            }
-            const newClear = setInterval(() => {
-                this.updateCountdown(chart); 
-            }, 1000);
+        stopButtonElement.addEventListener('click', () => this.handleStopTimer());
 
-            this.privateVariables.set(this, {
-                ...this.privateVariables.get(this), // Preserve other properties
-                clear: newClear,
-                time: time
-            });
-            
-            timeElement.disabled = true;
-            shortBreakElement.disabled = true;
-            longBreakElement.disabled = true;
-            startButtonElement.disabled = true;
-            stopButtonElement.disabled = false;
-            resetButtonElement.disabled = false;
-        });
-
-        stopButtonElement.addEventListener('click', () => {
-            this.stopTimer();
-            timeElement.disabled = true;
-            shortBreakElement.disabled = true;
-            longBreakElement.disabled = true;
-            startButtonElement.disabled = false;
-            stopButtonElement.disabled = true;
-            resetButtonElement.disabled = false;
-        });
-
-        resetButtonElement.addEventListener('click', () => {
-            timeElement.disabled = false;
-            shortBreakElement.disabled = false;
-            longBreakElement.disabled = false;
-            startButtonElement.disabled = false;
-            stopButtonElement.disabled = true;
-            resetButtonElement.disabled = true;
-            const time = timeElement.value * 60
-            const minutes = Math.floor(time / 60);
-            // Retrieve the current settings for text location and color
-            let pluginSettings = this.privateVariables.get(this);
-            this.privateVariables.set(this, {
-                ...pluginSettings, // Preserve existing settings
-                time: time,
-                timeLeft: 0,
-                minutes: minutes < 10 ? '0' + minutes : minutes,
-                seconds: (time % 60) < 10 ? '0' + time % 60 : time % 60
-            });
-            this.stopTimer();
-            chart.config.data.datasets[0].data = [0, time];
-            chart.update();
-        });
+        resetButtonElement.addEventListener('click', () => this.handleResetTimer());
     },
 
     updateCountdown: function (chart) {
@@ -327,6 +369,15 @@ const PomodoroTimerPlugin = {
         });
     }
 };
+
+// makes methods immutable
+Object.defineProperty(PomodoroTimerPlugin, 'handleStartTimer', {value: PomodoroTimerPlugin.handleStartTimer, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'handleStopTimer', {value: PomodoroTimerPlugin.handleStopTimer, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'handleSkipTimer', {value: PomodoroTimerPlugin.handleSkipTimer, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'handleResetTimer', {value: PomodoroTimerPlugin.handleResetTimer, writable: false, configurable: false, enumerable: true})
 
 PomodoroTimerPlugin.id = 'PomodoroTimerPlugin';
 

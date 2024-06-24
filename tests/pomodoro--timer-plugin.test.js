@@ -70,5 +70,30 @@ describe('PomodoroTimerPlugin', () => {
     // Add more assertions to test timer stopping functionality
   });
 
+  test('Timer Reset', () => {
+    startButton.click();
+    jest.advanceTimersByTime(11000);
+    expect(chart.data.datasets[0].data[0]).toBe(10);
+    stopButton.click();
+    resetButton.click();
+    expect(chart.data.datasets[0].data[0]).toBe(0)
+  });
+
+  test('Timer Skip', () => {
+    startButton.click();
+    let { taskCycleIndex } = PomodoroTimerPlugin.privateVariables.get(PomodoroTimerPlugin);
+    expect(taskCycleIndex).toBe(0);
+    PomodoroTimerPlugin.handleSkipTimer();
+    taskCycleIndex = PomodoroTimerPlugin.privateVariables.get(PomodoroTimerPlugin).taskCycleIndex;
+    expect(taskCycleIndex).toBe(1)
+  });
+
+  test('Methods are immutable', () => {
+    expect(() => { PomodoroTimerPlugin.handleStartTimer = "potato" }).toThrow(TypeError);
+    expect(() => { PomodoroTimerPlugin.handleStopTimer = 200 }).toThrow(TypeError);
+    expect(() => { PomodoroTimerPlugin.handleSkipTimer = {foo: "bar"} }).toThrow(TypeError);
+    expect(() => { PomodoroTimerPlugin.handleResetTimer = () => "override function" }).toThrow(TypeError);
+  })
+
   // Add more test cases as needed
 });
