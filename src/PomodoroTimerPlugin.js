@@ -185,12 +185,12 @@ const PomodoroTimerPlugin = {
             seconds: (time % 60) < 10 ? '0' + time % 60 : time % 60
         });
         this.stopTimer();
-        chart.config.data.datasets[0].data = [0, time];
+        chart.data.datasets[0].data = [0, time];
         chart.update();
     },
 
     handleSkipTimer: function() {
-        const { taskCycle, taskCycleIndex, time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
+        let { taskCycle, taskCycleIndex, time, timeLeft } = this.privateVariables.get(this);
         if(taskCycleIndex < taskCycle.length - 1){
             timeLeft = -1; //setting this to 0 causes chart to re-render on new cycle with 1s already filled in
             taskCycleIndex++;
@@ -370,7 +370,7 @@ const PomodoroTimerPlugin = {
     }
 };
 
-// makes the timer handlers immutable
+// makes methods immutable
 Object.defineProperty(PomodoroTimerPlugin, 'handleStartTimer', {value: PomodoroTimerPlugin.handleStartTimer, writable: false, configurable: false, enumerable: true})
 
 Object.defineProperty(PomodoroTimerPlugin, 'handleStopTimer', {value: PomodoroTimerPlugin.handleStopTimer, writable: false, configurable: false, enumerable: true})
