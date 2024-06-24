@@ -1,3 +1,5 @@
+"use strict";
+
 const PomodoroTimerPlugin = {
     privateVariables: new WeakMap(),
 
@@ -188,7 +190,7 @@ const PomodoroTimerPlugin = {
     },
 
     handleSkipTimer: function() {
-        let { taskCycle, taskCycleIndex, time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
+        const { taskCycle, taskCycleIndex, time, timeLeft, minutes, seconds } = this.privateVariables.get(this);
         if(taskCycleIndex < taskCycle.length - 1){
             timeLeft = -1; //setting this to 0 causes chart to re-render on new cycle with 1s already filled in
             taskCycleIndex++;
@@ -367,6 +369,15 @@ const PomodoroTimerPlugin = {
         });
     }
 };
+
+// makes the timer handlers immutable
+Object.defineProperty(PomodoroTimerPlugin, 'handleStartTimer', {value: PomodoroTimerPlugin.handleStartTimer, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'handleStopTimer', {value: PomodoroTimerPlugin.handleStopTimer, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'handleSkipTimer', {value: PomodoroTimerPlugin.handleSkipTimer, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'handleResetTimer', {value: PomodoroTimerPlugin.handleResetTimer, writable: false, configurable: false, enumerable: true})
 
 PomodoroTimerPlugin.id = 'PomodoroTimerPlugin';
 
