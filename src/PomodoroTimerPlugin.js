@@ -371,6 +371,26 @@ const PomodoroTimerPlugin = {
 };
 
 // makes methods immutable
+Object.defineProperty(PomodoroTimerPlugin, 'install', {value: PomodoroTimerPlugin.install, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'beforeUpdate', {value: PomodoroTimerPlugin.beforeUpdate, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'beforeDraw', {value: PomodoroTimerPlugin.beforeDraw, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'getTime', {value: PomodoroTimerPlugin.getTime, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'getCurrentTask', {value: PomodoroTimerPlugin.getCurrentTask, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'updateTaskCycle', {value: PomodoroTimerPlugin.updateTaskCycle, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'triggerNotification', {value: PomodoroTimerPlugin.triggerNotification, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'getTextPosition', {value: PomodoroTimerPlugin.getTextPosition, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'updateCountdown', {value: PomodoroTimerPlugin.updateCountdown, writable: false, configurable: false, enumerable: true})
+
+Object.defineProperty(PomodoroTimerPlugin, 'stopTimer', {value: PomodoroTimerPlugin.stopTimer, writable: false, configurable: false, enumerable: true})
+
 Object.defineProperty(PomodoroTimerPlugin, 'handleStartTimer', {value: PomodoroTimerPlugin.handleStartTimer, writable: false, configurable: false, enumerable: true})
 
 Object.defineProperty(PomodoroTimerPlugin, 'handleStopTimer', {value: PomodoroTimerPlugin.handleStopTimer, writable: false, configurable: false, enumerable: true})
