@@ -389,6 +389,8 @@ Object.defineProperty(PomodoroTimerPlugin, 'getTextPosition', {value: PomodoroTi
 
 Object.defineProperty(PomodoroTimerPlugin, 'updateCountdown', {value: PomodoroTimerPlugin.updateCountdown, writable: false, configurable: false, enumerable: true})
 
+Object.defineProperty(PomodoroTimerPlugin, 'updateMessages', {value: PomodoroTimerPlugin.updateMessages, writable: false, configurable: false, enumerable: true})
+
 Object.defineProperty(PomodoroTimerPlugin, 'stopTimer', {value: PomodoroTimerPlugin.stopTimer, writable: false, configurable: false, enumerable: true})
 
 Object.defineProperty(PomodoroTimerPlugin, 'handleStartTimer', {value: PomodoroTimerPlugin.handleStartTimer, writable: false, configurable: false, enumerable: true})
