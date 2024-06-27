@@ -148,6 +148,10 @@ const pomodoroChart = new Chart(el, {
 });
 ```
 
+# Version 0.4.6-beta
+
+`handleResetTimer()` now sets `timePassingMessage` and `taskCycleIndex` back to their default values.
+
 # Version 0.4.5-beta
 
 All methods on the Pomodoro Timer Plugin are now immutable.

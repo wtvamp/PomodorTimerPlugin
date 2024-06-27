@@ -182,7 +182,9 @@ const PomodoroTimerPlugin = {
             time: time,
             timeLeft: 0,
             minutes: minutes < 10 ? '0' + minutes : minutes,
-            seconds: (time % 60) < 10 ? '0' + time % 60 : time % 60
+            seconds: (time % 60) < 10 ? '0' + time % 60 : time % 60,
+            timePassingMessage: "Ready to Start",
+            taskCycleIndex: 0
         });
         this.stopTimer();
         chart.data.datasets[0].data = [0, time];
@@ -207,7 +209,6 @@ const PomodoroTimerPlugin = {
             this.privateVariables.set(this, {
                 ...this.privateVariables.get(this),
                 taskCycleIndex: 0,
-                timePassingMessage: "Ready to Start"
             })
             return;
         }
