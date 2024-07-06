@@ -139,7 +139,7 @@ const PomodoroTimerPlugin = {
     handleStartTimer: function() {
         const {timeElement, shortBreakElement, longBreakElement, startButtonElement, stopButtonElement, resetButtonElement, chart} = this.privateVariables.get(this);
         this.updateTaskCycle(timeElement, shortBreakElement, longBreakElement);
-        let { clear, time, taskCycle } = this.privateVariables.get(this);
+        let { clear, time, taskCycle, taskCycleIndex } = this.privateVariables.get(this);
 
         if (timeElement.disabled === false) {
             time = taskCycle[0] + 1; // allows the timer to actually start with the full amount instead of being 1s off (e.g. when I ran a 6s timer, the timer only ticked 5 times )
@@ -154,7 +154,8 @@ const PomodoroTimerPlugin = {
         this.privateVariables.set(this, {
             ...this.privateVariables.get(this), // Preserve other properties
             clear: newClear,
-            time: time
+            time: time,
+            timePassingMessage: taskCycleIndex === taskCycle.length - 1 ? "Long Rest" : taskCycleIndex % 2 === 0 ? "Work" : "Short Rest"
         });
         
         timeElement.disabled = true;
@@ -217,7 +218,7 @@ const PomodoroTimerPlugin = {
     install: function (chart, args, options) {
         console.log("Installing Pomodoro Timer Plugin");
         // Extract new configurable messages from options
-        const { timerInputId, shortBreakInputId, longBreakInputId, startButtonId, stopButtonId, resetButtonId, textColor, largeTextLocation, smallTextLocation, startPrompt = "Enter Time", secondaryPrompt = "Then Press Start", timePassingMessage = "Work", timeCompleteMessage = "Time's Up" } = options;
+        const { timerInputId, shortBreakInputId, longBreakInputId, startButtonId, stopButtonId, resetButtonId, textColor, largeTextLocation, smallTextLocation, startPrompt = "Enter Time", secondaryPrompt = "Then Press Start", timePassingMessage = "Ready To Start", timeCompleteMessage = "Time's Up" } = options;
  
         
         const timeElement = document.getElementById(timerInputId);
