@@ -148,6 +148,10 @@ const pomodoroChart = new Chart(el, {
 });
 ```
 
+# Version 0.4.7-beta
+
+Fixed an issue where `handleStartTimer()` was not setting the `timePassingMessage` property correctly when the timer initially starts.
+
 # Version 0.4.6-beta
 
 `handleResetTimer()` now sets `timePassingMessage` and `taskCycleIndex` back to their default values.
